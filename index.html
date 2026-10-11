@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Studi Kasus Eliminasi Gauss & Dekomposisi LU</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f7fb;--card:#fff;--tx:#1b2033;--mu:#5b6380;--ac:#3b5bdb;--ac2:#e7ecff;--bd:#dde1ee;--ok:#2b8a3e;--hl:#fff3bf}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12141c;--card:#1b1f2b;--tx:#e8eaf3;--mu:#9aa3c0;--ac:#7c93ff;--ac2:#252b45;--bd:#2f364d;--ok:#69db7c;--hl:#4a4318}}
+:root[data-theme="dark"]{--bg:#12141c;--card:#1b1f2b;--tx:#e8eaf3;--mu:#9aa3c0;--ac:#7c93ff;--ac2:#252b45;--bd:#2f364d;--ok:#69db7c;--hl:#4a4318}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.55}
+.w{max-width:900px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.5rem;margin:0 0 4px}h2{font-size:1.15rem;margin:22px 0 8px}h3{font-size:1rem;margin:16px 0 6px}
+.sub{color:var(--mu);margin:0 0 16px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tabs button{flex:1;min-width:150px;padding:10px 12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;cursor:pointer;font:inherit;text-align:left}
+.tabs button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.tabs small{display:block;opacity:.8;font-size:.78rem}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:14px}
+.tag{display:inline-block;background:var(--ac2);color:var(--ac);border-radius:6px;padding:2px 8px;font-size:.8rem;font-weight:600}
+.sc{overflow-x:auto}
+table.m{border-collapse:collapse;margin:6px 0;font-variant-numeric:tabular-nums}
+table.m td{padding:4px 10px;text-align:right;border:0}
+table.m td.sep{border-left:2px solid var(--mu)}
+table.m tr:first-child td:first-child{border-top-left-radius:0}
+.br{border-left:2px solid var(--tx);border-right:2px solid var(--tx);display:inline-block;border-radius:4px;vertical-align:middle}
+.inp td{padding:3px}
+.inp input{width:70px;padding:6px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx);font:inherit;text-align:right}
+button.go{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:10px 18px;font:inherit;cursor:pointer;margin-top:8px}
+button.rs{background:transparent;color:var(--mu);border:1px solid var(--bd);border-radius:8px;padding:10px 14px;font:inherit;cursor:pointer;margin:8px 0 0 6px}
+.st{border-left:3px solid var(--ac);padding:2px 0 2px 12px;margin:10px 0}
+.op{color:var(--mu);font-size:.92rem;font-family:ui-monospace,Menlo,Consolas,monospace}
+.res{background:var(--ac2);border-radius:10px;padding:12px 16px;margin-top:12px}
+.res b{color:var(--ok)}
+.err{color:#e03131;font-weight:600}
+.row{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--ac2);padding:1px 5px;border-radius:4px}
+.ex{border:1px solid var(--bd);border-radius:10px;padding:8px 12px;margin:0 0 12px;background:var(--ac2)}.ex summary{cursor:pointer;font-weight:600}.ex ul{margin:6px 0 2px;padding-left:20px}.ex li{margin:3px 0}
+.opx{background:var(--ac2);border-radius:8px;padding:6px 12px;margin:0 0 12px;font-size:.88rem}
+.pill{display:inline-block;margin:2px}.pill.on{background:var(--ac)!important;color:#fff!important;border-color:var(--ac)!important}
+.qo{display:block;width:100%;text-align:left;margin:6px 0;padding:9px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);font:inherit;cursor:pointer}
+.qo.ok{border-color:var(--ok);background:var(--ac2)}.qo.bad{border-color:#e03131}
+.lg{border:1px solid var(--bd);border-radius:14px;padding:3px 10px;margin:2px;background:var(--card);color:var(--tx);font:inherit;font-size:.82rem;cursor:pointer}.lg.off{opacity:.4;text-decoration:line-through}
+table.t3{border-collapse:collapse;font-size:.85rem}table.t3 td,table.t3 th{border:1px solid var(--bd);padding:4px 10px;text-align:right}
+footer{color:var(--mu);font-size:.85rem;margin-top:24px}
+</style>
+</head>
+<body>
+<div class="w">
+<h1>Studi Kasus: Eliminasi Gauss &amp; Dekomposisi LU</h1>
+<p class="sub">Tiga studi kasus sistem persamaan linear (SPL) berukuran 3×3, 4×4, dan 5×5, diselesaikan dengan eliminasi Gauss dan dekomposisi LU (termasuk Gauss-Jordan dan LU berpivot PA = LU), murni JavaScript tanpa library. Ubah angka pada matriks lalu klik <b>Hitung</b> untuk melihat langkah-langkahnya.</p>
+<div class="tabs" id="tabs"></div>
+<div id="view"></div>
+<footer>Metode: Eliminasi Gauss (pivot parsial), Gauss-Jordan, Dekomposisi LU Doolittle (L berdiagonal 1), dan LU berpivot (PA = LU). Penghitung operasi memakai aturan yang sama dengan Tabel III jurnal. Seluruh perhitungan dilakukan di browser tanpa library eksternal.</footer>
+</div>
+<script>
+// ===== Utilitas =====
+function f(x){if(Math.abs(x)<1e-12)x=0;var s=(Math.round(x*10000)/10000).toString();return s.replace('-','−')}
+function clone(M){return M.map(function(r){return r.slice()})}
+function mat(M,aug,hi){var h='<span class="br"><table class="m">';
+ for(var i=0;i<M.length;i++){h+='<tr>';for(var j=0;j<M[i].length;j++){
+  h+='<td'+(aug&&j==M[i].length-1?' class="sep"':'')+(hi&&hi.indexOf(i)>=0?' style="background:var(--hl)"':'')+'>'+f(M[i][j])+'</td>'}h+='</tr>'}
+ return h+'</table></span>'}
+function vec(v,name){return '<span class="br"><table class="m">'+v.map(function(x,i){return '<tr><td>'+f(x)+'</td></tr>'}).join('')+'</table></span>'}
+
+// ===== Eliminasi Gauss (pivot parsial) =====
+function gauss(A,b,names){
+ var n=A.length,M=A.map(function(r,i){return r.concat([b[i]])}),out='';
+ out+='<h3>Matriks augmented [A | b]</h3><div class="sc">'+mat(M,true)+'</div>';
+ out+='<h3>Tahap 1 — Eliminasi maju</h3>';
+ for(var k=0;k<n;k++){
+  var p=k;for(var i=k+1;i<n;i++)if(Math.abs(M[i][k])>Math.abs(M[p][k]))p=i;
+  if(Math.abs(M[p][k])<1e-12)return out+'<p class="err">Matriks singular: tidak ada solusi tunggal.</p>';
+  var ops='';
+  if(p!=k){var t=M[p];M[p]=M[k];M[k]=t;ops+='Pivot kolom '+(k+1)+' = '+f(M[k][k])+' → tukar R'+(k+1)+' ↔ R'+(p+1)+'<br>'}
+  else ops+='Pivot kolom '+(k+1)+' = '+f(M[k][k])+'<br>';
+  for(i=k+1;i<n;i++){var m=M[i][k]/M[k][k];
+   if(m!==0)ops+='R'+(i+1)+' ← R'+(i+1)+' − ('+f(m)+')·R'+(k+1)+'<br>';
+   for(var j=k;j<=n;j++)M[i][j]-=m*M[k][j];M[i][k]=0}
+  out+='<div class="st"><div class="op">'+ops+'</div><div class="sc">'+mat(M,true)+'</div></div>'}
+ out+='<h3>Tahap 2 — Substitusi mundur</h3>';
+ var x=new Array(n);
+ for(var i=n-1;i>=0;i--){var s=M[i][n],ex=f(M[i][n]);
+  for(var j=i+1;j<n;j++){s-=M[i][j]*x[j];ex+=' − ('+f(M[i][j])+')('+f(x[j])+')'}
+  x[i]=s/M[i][i];out+='<div class="st op">'+names[i]+' = ['+ex+'] / '+f(M[i][i])+' = <b>'+f(x[i])+'</b></div>'}
+ return out+hasil(x,names,A,b);
+}
+
+// ===== Dekomposisi LU Doolittle =====
+function lu(A,b,names){
+ var n=A.length,L=[],U=[],i,j,k,s,out='';
+ for(i=0;i<n;i++){L.push(new Array(n).fill(0));U.push(new Array(n).fill(0));L[i][i]=1}
+ for(i=0;i<n;i++){
+  for(j=i;j<n;j++){s=0;for(k=0;k<i;k++)s+=L[i][k]*U[k][j];U[i][j]=A[i][j]-s}
+  if(Math.abs(U[i][i])<1e-12)return '<p class="err">Pivot nol pada U('+(i+1)+','+(i+1)+') — butuh pertukaran baris (gunakan Gauss berpivot).</p>';
+  for(j=i+1;j<n;j++){s=0;for(k=0;k<i;k++)s+=L[j][k]*U[k][i];L[j][i]=(A[j][i]-s)/U[i][i]}}
+ out+='<h3>Tahap 1 — Faktorisasi A = L · U</h3><div class="row"><div><b>L</b><div class="sc">'+mat(L)+'</div></div><div><b>U</b><div class="sc">'+mat(U)+'</div></div></div>';
+ var LU=A.map(function(r,i){return r.map(function(_,j){var t=0;for(var q=0;q<n;q++)t+=L[i][q]*U[q][j];return t})});
+ out+='<p class="op">Verifikasi: L·U = '+(LU.every(function(r,i){return r.every(function(v,j){return Math.abs(v-A[i][j])<1e-9})})?'A ✓':'tidak sama dengan A ✗')+'</p>';
+ out+='<h3>Tahap 2 — Substitusi maju: L·y = b</h3>';var y=[];
+ for(i=0;i<n;i++){s=b[i];var ex=f(b[i]);for(j=0;j<i;j++){s-=L[i][j]*y[j];ex+=' − ('+f(L[i][j])+')('+f(y[j])+')'}
+  y[i]=s;out+='<div class="st op">y'+(i+1)+' = '+ex+' = <b>'+f(y[i])+'</b></div>'}
+ out+='<h3>Tahap 3 — Substitusi mundur: U·x = y</h3>';var x=new Array(n);
+ for(i=n-1;i>=0;i--){s=y[i];var ex=f(y[i]);for(j=i+1;j<n;j++){s-=U[i][j]*x[j];ex+=' − ('+f(U[i][j])+')('+f(x[j])+')'}
+  x[i]=s/U[i][i];out+='<div class="st op">'+names[i]+' = ['+ex+'] / '+f(U[i][i])+' = <b>'+f(x[i])+'</b></div>'}
+ return out+hasil(x,names,A,b);
+}
+function hasil(x,names,A,b){
+ var r=A.map(function(row,i){return row.reduce(function(a,v,j){return a+v*x[j]},0)});
+ var ok=r.every(function(v,i){return Math.abs(v-b[i])<1e-8});
+ return '<div class="res"><b>Solusi:</b><br>'+names.map(function(n,i){return n+' = <b>'+f(x[i])+'</b>'}).join(' &nbsp; ')+
+ '<br><span class="op">Cek A·x = ['+r.map(f).join(', ')+'] '+(ok?'= b ✓':'≠ b ✗')+'</span></div>';
+}
+
+// ===== Metode pembanding =====
+function gaussJordan(A,b,names){
+ var n=A.length,M=A.map(function(r,i){return r.concat([b[i]])}),i,j,k,out='<h3>Matriks augmented [A | b]</h3><div class="sc">'+mat(M,true)+'</div><h3>Eliminasi penuh: baris di atas dan di bawah pivot</h3>';
+ for(k=0;k<n;k++){var p=k;for(i=k+1;i<n;i++)if(Math.abs(M[i][k])>Math.abs(M[p][k]))p=i;
+  if(Math.abs(M[p][k])<1e-12)return out+'<p class="err">Matriks singular: tidak ada solusi tunggal.</p>';
+  var ops='';if(p!=k){var t=M[p];M[p]=M[k];M[k]=t;ops+='Tukar R'+(k+1)+' ↔ R'+(p+1)+'<br>'}
+  ops+='Pivot kolom '+(k+1)+' = '+f(M[k][k])+'<br>';
+  for(i=0;i<n;i++){if(i==k)continue;var m=M[i][k]/M[k][k];if(m!==0)ops+='R'+(i+1)+' ← R'+(i+1)+' − ('+f(m)+')·R'+(k+1)+'<br>';for(j=k;j<=n;j++)M[i][j]-=m*M[k][j];M[i][k]=0}
+  out+='<div class="st"><div class="op">'+ops+'</div><div class="sc">'+mat(M,true)+'</div></div>'}
+ var x=M.map(function(r,i){return r[n]/r[i]});
+ return out+'<h3>Hasil: x<sub>i</sub> = b<sub>i</sub> / a<sub>ii</sub></h3>'+hasil(x,names,A,b);
+}
+var EXPL={
+gauss:['Mengubah [A | b] menjadi bentuk segitiga atas dengan operasi baris, lalu menyelesaikannya dari baris terakhir ke atas.',
+ ['<b>Pivoting parsial:</b> pilih elemen terbesar (nilai mutlak) pada kolom k sebagai pivot, tukar baris bila perlu.','<b>Eliminasi maju:</b> pengali m = a<sub>ik</sub>/a<sub>kk</sub>, lalu R<sub>i</sub> ← R<sub>i</sub> − m·R<sub>k</sub> untuk semua baris di bawah pivot.','Ulangi untuk tiap kolom sampai matriks segitiga atas.','<b>Substitusi mundur:</b> x<sub>n</sub> dahulu, lalu naik ke x<sub>1</sub>.'],
+ 'Biaya ≈ 2n³/3 operasi. Kelebihan: berlaku untuk matriks nonsingular apa pun dan pivoting mencegah pembagi nol. Kekurangan: seluruh eliminasi diulang bila vektor b berganti.'],
+gj:['Varian Gauss yang mengeliminasi baris di atas dan di bawah pivot sekaligus, sehingga hasil akhirnya matriks diagonal.',
+ ['Pivoting parsial seperti pada Gauss.','Untuk tiap kolom k, nolkan <i>semua</i> elemen lain di kolom itu (bukan hanya yang di bawah).','Setelah kolom terakhir, solusi langsung terbaca: x<sub>i</sub> = b<sub>i</sub> / a<sub>ii</sub> (tanpa substitusi mundur).'],
+ 'Biaya ≈ n³ operasi, sekitar 1,5 kali Gauss. Kelebihan: alur sederhana dan cocok untuk mencari invers matriks. Kekurangan: lebih mahal bila hanya satu solusi dibutuhkan.'],
+lu:['Memfaktorkan A = L·U dengan L segitiga bawah (diagonal 1) dan U segitiga atas, lalu menyelesaikan dua sistem segitiga.',
+ ['<b>Faktorisasi Doolittle:</b> u<sub>ij</sub> = a<sub>ij</sub> − Σ l<sub>ik</sub>u<sub>kj</sub> dan l<sub>ji</sub> = (a<sub>ji</sub> − Σ l<sub>jk</sub>u<sub>ki</sub>) / u<sub>ii</sub>.','<b>Substitusi maju:</b> selesaikan L·y = b.','<b>Substitusi mundur:</b> selesaikan U·x = y.','Untuk b baru, ulangi dua substitusi saja; faktorisasi tidak dihitung ulang.'],
+ 'Faktorisasi ≈ 2n³/3 operasi, tiap b baru ≈ 2n². Kelebihan: hemat bila banyak b berbagi satu A. Kekurangan: versi ini tanpa pivoting, sehingga gagal bila pivot u<sub>ii</sub> = 0 (misalnya Kasus 3).'],
+plu:['LU dengan pivoting parsial: P·A = L·U, dengan P matriks permutasi yang mencatat pertukaran baris.',
+ ['Jalankan eliminasi Gauss berpivot; simpan pengali pada L dan catat pertukaran baris dalam P.','Selesaikan L·y = P·b dengan substitusi maju.','Selesaikan U·x = y dengan substitusi mundur.','Faktorisasi dipakai ulang untuk setiap b baru.'],
+ 'Biaya ≈ sama dengan LU (2n³/3, ditambah pencarian pivot) dan ≈ 2n² per b. Kelebihan: menutup kelemahan LU Doolittle (pivot nol, Kasus 3) dan lebih stabil. Kekurangan: perlu menyimpan permutasi P.'],
+};
+function ex(k,open){var e=EXPL[k];return '<details class="ex"'+(open?' open':'')+'><summary>Penjelasan metode</summary><p style="margin:6px 0 2px">'+e[0]+'</p><ul>'+e[1].map(function(t){return '<li>'+t+'</li>'}).join('')+'</ul><p style="margin:2px 0;color:var(--mu)">'+e[2]+'</p></details>'}
+var METH={gauss:['Eliminasi Gauss',gauss],gj:['Gauss-Jordan',gaussJordan],lu:['Dekomposisi LU',lu],plu:['LU berpivot (PA = LU)',pluHTML]};
+var CAT={gauss:'berpivot parsial; untuk matriks nonsingular apa pun',gj:'sekitar 1,5× operasi Gauss; cocok untuk invers',lu:'tanpa pivoting; butuh semua pivot ≠ 0; unggul untuk banyak b',plu:'LU dengan pertukaran baris; selalu dapat untuk matriks nonsingular'};
+// ===== Data studi kasus =====
+function modelStr(c){return c.A.map(function(r,i){var t=[];r.forEach(function(a,j){if(a!==0)t.push([a,j])});
+ return t.map(function(q,k){var ab=Math.abs(q[0]);return (k==0?(q[0]<0?'−':''):(q[0]<0?' − ':' + '))+(ab==1?'':ab+'·')+c.names[q[1]]}).join('')+' = '+String(c.b[i]).replace('-','−')+(c.lbl?' ('+c.lbl[i]+')':'')}).join('<br>')}
+var cases=[
+{t:'Kasus 1 · 3×3',s:'Arus rangkaian listrik',m:'gauss',tag:'Eliminasi Gauss',
+ names:['I₁','I₂','I₃'],cols:['I₁','I₂','I₃','V (volt)'],lbl:['loop 1','loop 2','loop 3'],
+ A:[[10,-2,-1],[-2,8,-3],[-1,-3,9]],b:[13,17,-2],x:[2,3,1],
+ desc:'Rangkaian listrik tiga loop (mesh) dengan hambatan bersama. Dengan Hukum Tegangan Kirchhoff (KVL) pada tiap loop diperoleh tiga persamaan untuk arus I₁, I₂, I₃ (ampere). Kolom kanan adalah sumber tegangan tiap loop (volt).',
+ note:'Satuan arus: ampere. Solusi diharapkan I₁=2 A, I₂=3 A, I₃=1 A. Semua metode berlaku.'},
+{t:'Kasus 2 · 4×4',s:'Produksi furnitur',m:'lu',tag:'Dekomposisi LU',
+ names:['Kursi','Meja','Lemari','Rak'],cols:['Kursi','Meja','Lemari','Rak','Stok'],lbl:['kayu','jam kerja','cat','paku'],
+ A:[[4,1,1,0],[1,5,2,1],[1,2,6,1],[0,1,1,4]],b:[75,145,145,55],
+ desc:'Pabrik membuat kursi, meja, lemari, dan rak. Tiap produk memakai kayu, jam kerja, cat, dan paku dalam jumlah tertentu (baris = sumber daya). Berapa unit tiap produk agar seluruh stok habis terpakai? Matriks A dapat dipakai ulang untuk stok b yang berbeda tanpa memfaktorkan ulang — keunggulan LU.',
+ note:'Solusi diharapkan 10 kursi, 20 meja, 15 lemari, 5 rak. Coba Bandingkan semua: semua metode berhasil.'},
+{t:'Kasus 3 · 5×5',s:'Harga buah (butuh pivot)',m:'gauss',tag:'Gauss + Pivot Parsial',
+ names:['Apel','Jeruk','Mangga','Pisang','Anggur'],cols:['Apel','Jeruk','Mangga','Pisang','Anggur','Total (Rb)'],lbl:['pembeli 1','pembeli 2','pembeli 3','pembeli 4','pembeli 5'],
+ A:[[0,2,1,1,0],[1,1,1,0,2],[2,1,3,1,1],[1,0,1,2,1],[1,2,0,1,3]],b:[13,11,26,18,15],
+ desc:'Lima pembeli berbelanja apel, jeruk, mangga, pisang, dan anggur (kg). Pembeli 1 tidak membeli apel sehingga elemen pivot pertama bernilai 0 — eliminasi Gauss biasa gagal, sehingga diperlukan pertukaran baris (pivoting). Hitung harga per kg tiap buah.',
+ note:'Harga dalam ribu rupiah per kg. Solusi diharapkan Apel=3, Jeruk=2, Mangga=4, Pisang=5, Anggur=1. Coba Bandingkan semua: Gauss, Gauss-Jordan, dan PA = LU berhasil; LU tanpa pivot gagal karena pivot nol.'}
+];
+cases.forEach(function(c){c.model=modelStr(c)});
+var cur=0,meth='auto';
+function tabs(){document.getElementById('tabs').innerHTML=cases.map(function(c,i){return '<button class="'+(i==cur?'on':'')+'" onclick="pick('+i+')">'+c.t+'<small>'+c.s+'</small></button>'}).join('')}
+function pick(i){cur=i;ED=null;ST.i=0;tabs();view()}
+function setM(m){meth=m;var d=read();ED={A:d.A,b:d.b,i:cur};view()}
+function read(){var c=cases[cur],n=c.A.length,A=[],b=[];
+ for(var i=0;i<n;i++){A.push([]);for(var j=0;j<n;j++){var e=document.getElementById('a'+i+j);A[i].push(e?parseFloat(e.value)||0:0)}var e2=document.getElementById('a'+i+'b');b.push(e2?parseFloat(e2.value)||0:0)}
+ return {A:A,b:b,n:n}}
+function view(){var c=cases[cur],n=c.A.length,A=ED&&ED.i==cur?ED.A:c.A,b=ED&&ED.i==cur?ED.b:c.b;
+ var h='<div class="card"><span class="tag">'+c.tag+'</span><h2 style="margin-top:8px">'+c.s+'</h2><p>'+c.desc+'</p><div class="op" style="line-height:1.8">'+c.model+'</div><p class="sub" style="margin:8px 0 0">'+c.note+'</p></div>'+
+ '<div class="card"><b>Input matriks [A | b]</b> <span class="sub">(bisa diubah)</span>';
+ h+='<div class="sc"><table class="inp"><tr>'+c.cols.map(function(x){return '<td style="text-align:center;font-size:.8rem;color:var(--mu)">'+x+'</td>'}).join('')+'</tr>';
+ for(var i=0;i<n;i++){h+='<tr>';for(var j=0;j<=n;j++)h+='<td><input type="number" step="any" id="a'+i+(j<n?j:'b')+'" value="'+(j<n?A[i][j]:b[i])+'"></td>';h+='</tr>'}
+ h+='</table></div>'+toolRow()+'<p style="margin:10px 0 0;'+(tool=='solve'?'':'display:none')+'">Metode: '+[['auto','Sesuai kasus'],['gauss','Gauss'],['gj','Gauss-Jordan'],['lu','LU'],['plu','PA = LU'],['both','Bandingkan semua']].map(function(m){return '<button class="rs" style="margin:2px;'+(meth==m[0]?'background:var(--ac);color:#fff;border-color:var(--ac)':'')+'" onclick="setM(\''+m[0]+'\')">'+m[1]+'</button>'}).join('')+'</p>'+
+ '<button class="go" onclick="run()">Hitung</button><button class="rs" onclick="resetC()">Reset</button></div><div id="out"></div>';
+ document.getElementById('view').innerHTML=h;run()}
+function resetC(){ED=null;view()}
+function run(){var c=cases[cur],d=read(),A=d.A,b=d.b,n=d.n,names=c.names;
+ if(tool!='solve'){document.getElementById('out').innerHTML='<div class="card">'+TL[tool](A,b,n,names,c)+'</div>';if(tool=='step')stepShow();return}
+ var m=meth=='auto'?c.m:meth,o='';
+ function sec(k,h){return '<div class="card"><h2 style="margin-top:0">Penyelesaian — '+METH[k][0]+'</h2>'+ex(k,m!='both')+opsLine(k,A,b)+h+'</div>'}
+ if(m=='both'){var ks=['gauss','gj','lu','plu'],hs={},tb='<div class="card"><h2 style="margin-top:0">Ringkasan perbandingan</h2><div class="sc"><table class="m"><tr><td><b>Metode</b></td><td style="text-align:left"><b>Status</b></td><td style="text-align:left"><b>Catatan</b></td></tr>';
+  ks.forEach(function(k){hs[k]=METH[k][1](A,b,names);var ok=hs[k].indexOf('class="err"')<0,mm=hs[k].match(/class="err">([^<]*)</);
+   tb+='<tr><td>'+METH[k][0]+'</td><td style="text-align:left;color:'+(ok?'var(--ok)':'#e03131')+'">'+(ok?'✓ berhasil':'✗ '+(mm?mm[1]:'gagal'))+'</td><td style="text-align:left;color:var(--mu)">'+CAT[k]+'</td></tr>'});
+  o=tb+'</table></div><p class="sub" style="margin:10px 0 0">Gauss memproses A dan b bersamaan sehingga eliminasi diulang penuh bila b berubah. LU dan PA = LU memfaktorkan A sekali, lalu tiap b baru hanya butuh substitusi (≈ 2n²). LU Doolittle tanpa pivoting gagal bila ada pivot nol; Gauss berpivot dan PA = LU tidak. Gauss-Jordan ≈ 1,5× biaya Gauss.</p></div>'+ks.map(function(k){return sec(k,hs[k])}).join('')}
+ else o=sec(m,METH[m][1](A,b,names));
+ document.getElementById('out').innerHTML=o}
+// ===== Penghitung operasi (versi numerik, aturan hitung = Tabel III) =====
+function cn(){return {md:0,pm:0,sq:0}}
+function tot(c){return c.md+c.pm+c.sq}
+function nGauss(A,b,c){var n=A.length,M=A.map(function(r,i){return r.concat([b[i]])}),i,j,k;
+ for(k=0;k<n-1;k++){var p=k;for(i=k+1;i<n;i++)if(Math.abs(M[i][k])>Math.abs(M[p][k]))p=i;if(Math.abs(M[p][k])<1e-12)throw 0;var t=M[p];M[p]=M[k];M[k]=t;
+  for(i=k+1;i<n;i++){var m=M[i][k]/M[k][k];c.md++;for(j=k+1;j<=n;j++){M[i][j]-=m*M[k][j];c.md++;c.pm++}}}
+ if(Math.abs(M[n-1][n-1])<1e-12)throw 0;var x=[];
+ for(i=n-1;i>=0;i--){var s=M[i][n];for(j=i+1;j<n;j++){s-=M[i][j]*x[j];c.md++;c.pm++}x[i]=s/M[i][i];c.md++}return x}
+function nGJ(A,b,c){var n=A.length,M=A.map(function(r,i){return r.concat([b[i]])}),i,j,k;
+ for(k=0;k<n;k++){var p=k;for(i=k+1;i<n;i++)if(Math.abs(M[i][k])>Math.abs(M[p][k]))p=i;if(Math.abs(M[p][k])<1e-12)throw 0;var t=M[p];M[p]=M[k];M[k]=t;
+  for(i=0;i<n;i++){if(i==k)continue;var m=M[i][k]/M[k][k];c.md++;for(j=k+1;j<=n;j++){M[i][j]-=m*M[k][j];c.md++;c.pm++}}}
+ return M.map(function(r,i){c.md++;return r[n]/r[i]})}
+function nLUf(A,c){var n=A.length,L=[],U=[],i,j,k,s;for(i=0;i<n;i++){L.push(new Array(n).fill(0));U.push(new Array(n).fill(0));L[i][i]=1}
+ for(i=0;i<n;i++){for(j=i;j<n;j++){s=0;for(k=0;k<i;k++){s+=L[i][k]*U[k][j];c.md++;c.pm++}U[i][j]=A[i][j]-s;c.pm++}
+  if(U[i][i]===0)throw 0;
+  for(j=i+1;j<n;j++){s=0;for(k=0;k<i;k++){s+=L[j][k]*U[k][i];c.md++;c.pm++}L[j][i]=(A[j][i]-s)/U[i][i];c.pm++;c.md++}}
+ return {L:L,U:U}}
+function nLUs(F,b,c){var n=b.length,y=[],x=[],i,j,s;
+ for(i=0;i<n;i++){s=b[i];for(j=0;j<i;j++){s-=F.L[i][j]*y[j];c.md++;c.pm++}y[i]=s}
+ for(i=n-1;i>=0;i--){s=y[i];for(j=i+1;j<n;j++){s-=F.U[i][j]*x[j];c.md++;c.pm++}x[i]=s/F.U[i][i];c.md++}return x}
+// rumus teori (Persamaan 1,2,3,5,6,7,8 pada jurnal)
+function r6(v){return Math.round(v*1e6)/1e6}function TG(n){return r6(2*n*n*n/3+1.5*n*n-7*n/6)}function TGJ(n){return n*n*n+n*n-n}function TLU(n){return r6((4*n*n*n+3*n*n-n)/6)}function SLU(n){return 2*n*n-n}
+function ok(a,b){return Math.abs(a-b)<1e-6?' ✓':' ≠'}
+function opsLine(k,A,b){var n=A.length,c=cn(),c2=cn(),h='';
+ if(k=='plu')return '<div class="opx">⚙ Jumlah operasi ≈ sama dengan LU Doolittle (faktorisasi ≈ T<sub>LU</sub>, tiap b ≈ 2n²−n), ditambah pencarian pivot yang tidak dihitung sebagai operasi aritmetika.</div>';
+ try{if(k=='gauss'){nGauss(A,b,c);h='total <b>'+tot(c)+'</b> · rumus T<sub>G</sub>('+n+') = '+TG(n)+ok(tot(c),TG(n))}
+ else if(k=='gj'){nGJ(A,b,c);h='total <b>'+tot(c)+'</b> · rumus T<sub>GJ</sub>('+n+') = '+TGJ(n)+ok(tot(c),TGJ(n))}
+ else{var F=nLUf(A,c);nLUs(F,b,c2);h='faktorisasi <b>'+tot(c)+'</b> (rumus '+TLU(n)+ok(tot(c),TLU(n))+') + substitusi <b>'+tot(c2)+'</b> (rumus '+SLU(n)+ok(tot(c2),SLU(n))+') = <b>'+(tot(c)+tot(c2))+'</b>'}}catch(e){return ''}
+ return '<div class="opx">⚙ Jumlah operasi (perkalian/pembagian + penjumlahan/pengurangan): '+h+'</div>'}
+// ===== Utilitas tambahan =====
+function cl(M){return M.map(function(r){return r.slice()})}
+function Z(n){var M=[];for(var i=0;i<n;i++)M.push(new Array(n).fill(0));return M}
+function num(v){v=Math.abs(v)<1e-12?0:v;return String(+v.toFixed(6))}
+function sci(v){return v===0?'0':v.toExponential(1)}
+function tr(M){return M.map(function(_,c){return M.map(function(r){return r[c]})})}
+function msg(e){return typeof e=='string'?e:'gagal'}
+function matH(M,aug,rows,cells){rows=rows||[];cells=cells||[];var h='<span class="br"><table class="m">';
+ M.forEach(function(r,i){h+='<tr>';r.forEach(function(v,j){var s=(aug&&j==r.length-1?'border-left:2px solid var(--mu);':'')+(rows.indexOf(i)>=0?'background:var(--hl);':'')+(cells.indexOf(i+','+j)>=0?'outline:2px solid var(--ac);font-weight:700;':'');h+='<td style="'+s+'">'+f(v)+'</td>'});h+='</tr>'});return h+'</table></span>'}
+// ===== LU berpivot (faktorisasi) =====
+function plu(A){var n=A.length,U=cl(A),L=Z(n),P=[],i,j,k,sw=0;for(i=0;i<n;i++)P.push(i);
+ for(k=0;k<n;k++){var p=k;for(i=k+1;i<n;i++)if(Math.abs(U[i][k])>Math.abs(U[p][k]))p=i;if(Math.abs(U[p][k])<1e-12)throw 'singular';
+  if(p!=k){var t=U[p];U[p]=U[k];U[k]=t;t=L[p];L[p]=L[k];L[k]=t;var q=P[p];P[p]=P[k];P[k]=q;sw++}
+  for(i=k+1;i<n;i++){var m=U[i][k]/U[k][k];L[i][k]=m;for(j=k+1;j<n;j++)U[i][j]-=m*U[k][j];U[i][k]=0}}
+ for(i=0;i<n;i++)L[i][i]=1;return {L:L,U:U,P:P,sw:sw}}
+function pluSolve(F,b){var n=b.length,y=[],x=new Array(n),i,j,s;
+ for(i=0;i<n;i++){s=b[F.P[i]];for(j=0;j<i;j++)s-=F.L[i][j]*y[j];y[i]=s}
+ for(i=n-1;i>=0;i--){s=y[i];for(j=i+1;j<n;j++)s-=F.U[i][j]*x[j];x[i]=s/F.U[i][i]}return x}
+// ===== PA = LU =====
+function pluHTML(A,b,names){var n=A.length,F,i,j,s;try{F=plu(A)}catch(e){return '<p class="err">Matriks singular: faktorisasi PA = LU tidak ada.</p>'}
+ var P=F.P.map(function(p){var r=new Array(n).fill(0);r[p]=1;return r}),y=[],x=new Array(n),err=0;
+ F.P.forEach(function(p,i){for(var j=0;j<n;j++){var t=0;for(var q=0;q<n;q++)t+=F.L[i][q]*F.U[q][j];err=Math.max(err,Math.abs(A[p][j]-t))}});
+ var out='<h3>Tahap 1 — Eliminasi Gauss berpivot menghasilkan P·A = L·U</h3><p class="op">Jumlah pertukaran baris: '+F.sw+'. Baris ke-i dari PA = baris ['+F.P.map(function(p){return p+1}).join(', ')+'] dari A.</p><div class="row"><div><b>P</b><div class="sc">'+mat(P)+'</div></div><div><b>L</b><div class="sc">'+mat(F.L)+'</div></div><div><b>U</b><div class="sc">'+mat(F.U)+'</div></div></div><p class="op">Verifikasi: maks|PA − LU| = '+sci(err)+'</p>';
+ out+='<h3>Tahap 2 — Substitusi maju: L·y = P·b</h3>';
+ for(i=0;i<n;i++){s=b[F.P[i]];var ex=f(b[F.P[i]]);for(j=0;j<i;j++){s-=F.L[i][j]*y[j];ex+=' − ('+f(F.L[i][j])+')('+f(y[j])+')'}y[i]=s;out+='<div class="st op">y'+(i+1)+' = '+ex+' = <b>'+f(y[i])+'</b></div>'}
+ out+='<h3>Tahap 3 — Substitusi mundur: U·x = y</h3>';
+ for(i=n-1;i>=0;i--){s=y[i];var ex=f(y[i]);for(j=i+1;j<n;j++){s-=F.U[i][j]*x[j];ex+=' − ('+f(F.U[i][j])+')('+f(x[j])+')'}x[i]=s/F.U[i][i];out+='<div class="st op">'+names[i]+' = ['+ex+'] / '+f(F.U[i][i])+' = <b>'+f(x[i])+'</b></div>'}
+ return out+hasil(x,names,A,b)}
+// ===== Mode langkah demi langkah =====
+function fM(d,M,aug,rows,cells,l){return {d:d,mats:[{l:l,M:cl(M),aug:aug,rows:rows,cells:cells}]}}
+function frGauss(A,b,gj){var n=A.length,M=A.map(function(r,i){return r.concat([b[i]])}),F=[],i,j,k,x=new Array(n);
+ F.push(fM('Matriks augmented awal [A | b].',M,true));
+ for(k=0;k<(gj?n:n-1);k++){var p=k;for(i=k+1;i<n;i++)if(Math.abs(M[i][k])>Math.abs(M[p][k]))p=i;
+  if(Math.abs(M[p][k])<1e-12)throw 'matriks singular: tidak ada solusi tunggal';
+  F.push(fM('Kolom '+(k+1)+': pivot terbesar = '+f(M[p][k])+' pada baris '+(p+1)+'.'+(p!=k?' Tukar R'+(k+1)+' ↔ R'+(p+1)+'.':' Tanpa pertukaran.'),M,true,[p],[p+','+k]));
+  if(p!=k){var t=M[p];M[p]=M[k];M[k]=t;F.push(fM('Setelah menukar baris '+(k+1)+' dan '+(p+1)+'.',M,true,[k,p]))}
+  for(i=gj?0:k+1;i<n;i++){if(i==k)continue;var m=M[i][k]/M[k][k];if(m===0)continue;for(j=k;j<=n;j++)M[i][j]-=m*M[k][j];M[i][k]=0;
+   F.push(fM('R'+(i+1)+' ← R'+(i+1)+' − ('+f(m)+')·R'+(k+1)+(gj?'':' (menolkan elemen di bawah pivot)'),M,true,[i],[k+','+k]))}}
+ if(gj){for(i=0;i<n;i++)x[i]=M[i][n]/M[i][i];F.push(fM('Matriks diagonal: x<sub>i</sub> = b<sub>i</sub> / a<sub>ii</sub>. <b>Solusi x = ['+x.map(f).join('; ')+']</b>',M,true))}
+ else{for(i=n-1;i>=0;i--){var s=M[i][n],ex=f(M[i][n]);for(j=i+1;j<n;j++){s-=M[i][j]*x[j];ex+=' − ('+f(M[i][j])+')('+f(x[j])+')'}x[i]=s/M[i][i];
+   F.push(fM('Substitusi mundur: x'+(i+1)+' = ['+ex+'] / '+f(M[i][i])+' = <b>'+f(x[i])+'</b>',M,true,[i]))}}
+ return F}
+function solveFrames(F,L,U,b,unit,ul,done){var n=b.length,y=[],x=[],i,j,s;
+ for(i=0;i<n;i++){s=b[i];for(j=0;j<i;j++)s-=L[i][j]*y[j];y[i]=unit?s:s/L[i][i];F.push({d:'Substitusi maju L·y = b: y'+(i+1)+' = <b>'+f(y[i])+'</b>',mats:[{l:'y (terhitung)',M:y.map(function(v){return [v]}),rows:[i]}]})}
+ var X=new Array(n);
+ for(i=n-1;i>=0;i--){s=y[i];for(j=i+1;j<n;j++)s-=U[i][j]*X[j];X[i]=s/U[i][i];
+  F.push({d:'Substitusi mundur '+ul+'·x = y: x'+(i+1)+' = <b>'+f(X[i])+'</b>'+(i==0?'. <b>Solusi x = ['+X.map(f).join('; ')+']</b>':''),mats:[{l:'x (terhitung)',M:X.filter(function(v){return v!==undefined}).map(function(v){return [v]}),rows:[0]}]})}
+ return F}
+function frLU(A,b,chol){var n=A.length,L=Z(n),U=Z(n),F=[],i,j,k,s;
+ var two=function(d,rU,rL,cL){F.push({d:d,mats:[{l:'L',M:cl(L),rows:rL,cells:cL},{l:chol?'Lᵀ':'U',M:chol?tr(L):cl(U),rows:rU}]})};
+ if(!chol){for(i=0;i<n;i++)L[i][i]=1;F.push({d:'Faktorisasi A = L·U dengan diagonal L = 1. Baris ke-i dari U dan kolom ke-i dari L dihitung bergantian.',mats:[{l:'A',M:cl(A)}]});
+  for(i=0;i<n;i++){for(j=i;j<n;j++){s=0;for(k=0;k<i;k++)s+=L[i][k]*U[k][j];U[i][j]=A[i][j]-s}
+   if(U[i][i]===0)throw 'pivot u'+(i+1)+(i+1)+' = 0: LU tanpa pivoting gagal (gunakan PA = LU)';
+   two('Baris '+(i+1)+' dari U: u<sub>ij</sub> = a<sub>ij</sub> − Σ l<sub>ik</sub>u<sub>kj</sub>',[i],[]);
+   var cc=[];for(j=i+1;j<n;j++){s=0;for(k=0;k<i;k++)s+=L[j][k]*U[k][i];L[j][i]=(A[j][i]-s)/U[i][i];cc.push(j+','+i)}
+   if(cc.length)two('Kolom '+(i+1)+' dari L: l<sub>ji</sub> = (a<sub>ji</sub> − Σ l<sub>jk</sub>u<sub>ki</sub>) / u<sub>ii</sub>',[],[],cc)}
+  return solveFrames(F,L,U,b,true,'U')}
+ return F}
+var FR={gauss:function(A,b){return frGauss(A,b,false)},gj:function(A,b){return frGauss(A,b,true)},lu:function(A,b){return frLU(A,b,false)}};
+var ST={m:'gauss',i:0,F:[]},tool='solve',ED=null;
+function frHTML(fr){var h='<div class="st"><div style="margin-bottom:6px">'+fr.d+'</div><div class="row">';
+ fr.mats.forEach(function(m){h+='<div>'+(m.l?'<b>'+m.l+'</b><div class="sc">':'<div class="sc">')+matH(m.M,m.aug,m.rows,m.cells)+'</div></div>'});return h+'</div></div>'}
+function stepShow(){var el=document.getElementById('fr');if(!el||!ST.F.length)return;ST.i=Math.max(0,Math.min(ST.F.length-1,ST.i));
+ el.innerHTML=frHTML(ST.F[ST.i]);document.getElementById('ct').innerHTML='Langkah '+(ST.i+1)+' / '+ST.F.length;var sl=document.getElementById('sl');if(sl)sl.value=ST.i}
+function stepGo(d){ST.i+=d;stepShow()}
+function stepMeth(m){ST.m=m;ST.i=0;run()}
+// ===== Alat =====
+var TL={};
+function pills(items,cur,fn){return items.map(function(m){return '<button class="rs pill'+(cur==m[0]?' on':'')+'" onclick="'+fn+'(\''+m[0]+'\')">'+m[1]+'</button>'}).join('')}
+TL.step=function(A,b){var F,er='';try{F=FR[ST.m](A,b)}catch(e){F=null;er=msg(e)}
+ var pl='<p style="margin:0 0 8px">Metode: '+pills([['gauss','Gauss'],['gj','Gauss-Jordan'],['lu','LU']],ST.m,'stepMeth')+'</p>';
+ var h='<h2 style="margin-top:0">Langkah demi langkah</h2><p class="sub" style="margin:0 0 8px">Telusuri satu operasi pada satu waktu. Baris atau elemen yang sedang diproses disorot. Untuk PA = LU, langkahnya sama dengan eliminasi Gauss berpivot (L menyimpan pengali).</p>'+pl;
+ if(!F){ST.F=[];return h+'<p class="err">Tidak dapat dijalankan: '+er+'</p>'}
+ ST.F=F;ST.i=Math.min(ST.i,F.length-1);
+ return h+'<p><button class="rs" onclick="stepGo(-1)">◀ Sebelumnya</button> <button class="go" style="margin:0 6px" onclick="stepGo(1)">Berikutnya ▶</button> <input type="range" id="sl" min="0" max="'+(F.length-1)+'" value="'+ST.i+'" oninput="ST.i=+this.value;stepShow()" style="vertical-align:middle;width:35%"> <span id="ct" class="sub"></span></p><div id="fr"></div>'}
+var TOOLS=[['solve','Penyelesaian'],['step','Langkah demi langkah']];
+function setT(t){var d=read();ED={A:d.A,b:d.b,i:cur};tool=t;ST.i=0;view()}
+function toolRow(){return '<p style="margin:12px 0 0"><b>Alat:</b> '+pills(TOOLS,tool,'setT')+'</p>'}
+tabs();view();
+</script>
+</body>
+</html>
